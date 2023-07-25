@@ -1,0 +1,6 @@
+{
+  "extends": "next/core-web-vitals",
+  "rules": {
+    "max-len": ["warn", { "code": 1500 }]
+  }
+}
