@@ -1,21 +1,9 @@
 const bcrypt = require("bcryptjs");
 const User = require("../model/user");
-// const { server } = require("@passwordless-id/webauthn");
-// import { server } from "@passwordless-id/webauthn";
-
-// // const { promisify } = require('util');
-
-// // Use promisify to wrap the dynamic import as a promise
-// const dynamicImport = server(require);
-
-const { promisify } = require("util");
-
-// Use promisify to wrap the dynamic import as a promise
-const dynamicImport = promisify(require);
 
 require("dotenv").config();
 
-const { getUsers, generateSecretChallenge } = require("./helpers");
+const { getUsers, createUser, generateSecretChallenge } = require("./helpers");
 
 /**
  * Register user
@@ -64,9 +52,8 @@ async function getUserChallenge(req, res) {
  * @param {object} res The response object
  */
 async function registerHandler(req, res) {
-  const { server } = await dynamicImport("@passwordless-id/webauthn");
-
-  const { registration } = req.body;
+  const { server } = await import("@passwordless-id/webauthn");
+  const { email, registration } = req.body;
   const expected = {
     challenge: "a7c61ef9-dc23-4806-b486-2428938a547e",
     origin: "http://localhost:3000"
@@ -77,33 +64,27 @@ async function registerHandler(req, res) {
     expected
   );
 
-  console.log("hahaha registration is here", registrationParsed);
+  const credentials = registrationParsed.credential;
 
-  res.status(201).json({
-    message: "Registration end point"
-  });
-
-  // if (password.length < 6) {
-  // return res.status(400).json
-  // ({ message: "Password less than 6 characters" });
-  // }
-
-  // const hashedPassword = await bcrypt.hash(password, 10);
-  // try {
-  //   // create user should also store the challenge token
-  //   const user = await createUser(email, hashedPassword, "admin");
-  //   // const maxAge = 3 * 60 * 60;postm
-
-  //   res.status(201).json({
-  //     message: "User successfully created",
-  //     user
-  //   });
-  // } catch (error) {
-  //   res.status(401).json({
-  //     message: "User not successful created",
-  //     error: error.message
-  //   });
-  // }
+  try {
+    // create user should also store the challenge token
+    const user = await createUser(email, credentials, "admin");
+    if (!user) {
+      res.status(401).json({
+        message: "User not successful created",
+        error: error.message
+      });
+    }
+    res.status(201).json({
+      message: "User successfully created",
+      user
+    });
+  } catch (error) {
+    res.status(401).json({
+      message: "User not successful created",
+      error: error.message
+    });
+  }
 }
 
 /**
