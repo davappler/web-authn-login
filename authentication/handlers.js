@@ -10,7 +10,7 @@ const { createUser } = require("./helpers");
  * @param {object} res The response object
  */
 async function registerHandler(req, res) {
-  const { username, password } = req.body;
+  const { email, password } = req.body;
   if (password.length < 6) {
     return res.status(400).json({ message: "Password less than 6 characters" });
   }
@@ -18,7 +18,7 @@ async function registerHandler(req, res) {
   const hashedPassword = await bcrypt.hash(password, 10);
   try {
     // create user should also store the challenge token
-    const user = await createUser(username, hashedPassword, "admin");
+    const user = await createUser(email, hashedPassword, "admin");
     // const maxAge = 3 * 60 * 60;postm
 
     res.status(201).json({
@@ -39,15 +39,15 @@ async function registerHandler(req, res) {
  * @param {object} res The response object
  */
 async function loginHandler(req, res) {
-  const { username, password } = req.body;
-  if (!username || !password) {
+  const { email, password } = req.body;
+  if (!email || !password) {
     return res.status(400).json({
-      message: "Username or Password not present"
+      message: "email or Password not present"
     });
   }
 
   try {
-    const user = await User.findOne({ username });
+    const user = await User.findOne({ email });
     if (!user) {
       res.status(401).json({
         message: "Login not successful",
@@ -82,14 +82,14 @@ async function loginHandler(req, res) {
  * @param {object} res The response object
  */
 async function updateHandler(req, res) {
-  const { newUserName, id } = req.body;
+  const { newEmail, id } = req.body;
   // Verifying if role and id is present
 
   try {
     const user = await User.findById(id);
-    user.username = newUserName;
+    user.email = newEmail;
     user.save();
-    res.status(200).json({ message: "Username updated successfully" });
+    res.status(200).json({ message: "email updated successfully" });
   } catch (error) {
     res
       .status(400)
