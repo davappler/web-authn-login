@@ -1,4 +1,5 @@
 const User = require("../model/user");
+const crypto = require("crypto");
 require("dotenv").config();
 
 /**
@@ -26,4 +27,8 @@ async function getUsers() {
   return users;
 }
 
-module.exports = { createUser, getUsers };
+generateSecretChallenge = () => {
+  return crypto.randomBytes(Number(process.env.SECRET_LENGTH)).toString("hex");
+};
+
+module.exports = { createUser, getUsers, generateSecretChallenge };

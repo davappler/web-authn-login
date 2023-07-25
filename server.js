@@ -15,8 +15,8 @@ app.use(cors());
 const PORT = 5001;
 
 app.use("/api/auth", require("./authentication/routes"));
-app.get("/admin", (req, res) => res.send("Admin Route"));
-app.get("/basic", (req, res) => res.send("User Route"));
+// app.get("/admin", (req, res) => res.send("Admin Route"));
+// app.get("/basic", (req, res) => res.send("User Route"));
 
 const server = app.listen(PORT, () =>
   console.log(`Server Connected to port ${PORT}`)
