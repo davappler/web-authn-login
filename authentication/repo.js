@@ -2,11 +2,20 @@ const {
   registerHandler,
   loginHandler,
   updateHandler,
-  deleteHandler
+  deleteHandler,
+  getUsersHandler,
+  getUserChallenge
 } = require("./handlers");
 
 exports.register = async (req, res, next) => {
   registerHandler(req, res);
+};
+
+exports.getUsers = async (req, res, next) => {
+  getUsersHandler(req, res);
+};
+exports.getChallenge = async (req, res, next) => {
+  getUserChallenge(req, res);
 };
 
 exports.login = async (req, res, next) => {

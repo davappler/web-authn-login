@@ -1,8 +1,62 @@
 const bcrypt = require("bcryptjs");
 const User = require("../model/user");
+// const { server } = require("@passwordless-id/webauthn");
+// import { server } from "@passwordless-id/webauthn";
+
+// // const { promisify } = require('util');
+
+// // Use promisify to wrap the dynamic import as a promise
+// const dynamicImport = server(require);
+
+const { promisify } = require("util");
+
+// Use promisify to wrap the dynamic import as a promise
+const dynamicImport = promisify(require);
+
 require("dotenv").config();
 
-const { createUser } = require("./helpers");
+const { getUsers, generateSecretChallenge } = require("./helpers");
+
+/**
+ * Register user
+ * @param {object} req The request object
+ * @param {object} res The response object
+ */
+async function getUsersHandler(req, res) {
+  try {
+    const users = await getUsers();
+    res.status(200).json({
+      message: "Users successfully fetched",
+      users
+    });
+  } catch (error) {
+    res.status(401).json({
+      message: "An error occurred while getting the users",
+      error: error.message
+    });
+  }
+}
+
+/**
+ * Creates a challenge
+ * @param {object} req The request object
+ * @param {object} res The response object
+ */
+async function getUserChallenge(req, res) {
+  try {
+    const challenge = generateSecretChallenge();
+
+    res.status(201).json({
+      message: "Secret Challenge created",
+      challenge
+    });
+  } catch (error) {
+    res.status(401).json({
+      message: "Challenge not created",
+      error: error.message
+    });
+  }
+}
 
 /**
  * Register user
@@ -10,27 +64,46 @@ const { createUser } = require("./helpers");
  * @param {object} res The response object
  */
 async function registerHandler(req, res) {
-  const { email, password } = req.body;
-  if (password.length < 6) {
-    return res.status(400).json({ message: "Password less than 6 characters" });
-  }
+  const { server } = await dynamicImport("@passwordless-id/webauthn");
 
-  const hashedPassword = await bcrypt.hash(password, 10);
-  try {
-    // create user should also store the challenge token
-    const user = await createUser(email, hashedPassword, "admin");
-    // const maxAge = 3 * 60 * 60;postm
+  const { registration } = req.body;
+  const expected = {
+    challenge: "a7c61ef9-dc23-4806-b486-2428938a547e",
+    origin: "http://localhost:3000"
+  };
 
-    res.status(201).json({
-      message: "User successfully created",
-      user
-    });
-  } catch (error) {
-    res.status(401).json({
-      message: "User not successful created",
-      error: error.message
-    });
-  }
+  const registrationParsed = await server.verifyRegistration(
+    registration,
+    expected
+  );
+
+  console.log("hahaha registration is here", registrationParsed);
+
+  res.status(201).json({
+    message: "Registration end point"
+  });
+
+  // if (password.length < 6) {
+  // return res.status(400).json
+  // ({ message: "Password less than 6 characters" });
+  // }
+
+  // const hashedPassword = await bcrypt.hash(password, 10);
+  // try {
+  //   // create user should also store the challenge token
+  //   const user = await createUser(email, hashedPassword, "admin");
+  //   // const maxAge = 3 * 60 * 60;postm
+
+  //   res.status(201).json({
+  //     message: "User successfully created",
+  //     user
+  //   });
+  // } catch (error) {
+  //   res.status(401).json({
+  //     message: "User not successful created",
+  //     error: error.message
+  //   });
+  // }
 }
 
 /**
@@ -120,5 +193,7 @@ module.exports = {
   registerHandler,
   loginHandler,
   updateHandler,
-  deleteHandler
+  deleteHandler,
+  getUsersHandler,
+  getUserChallenge
 };
