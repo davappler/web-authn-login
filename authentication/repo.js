@@ -2,11 +2,15 @@ const {
   registerHandler,
   loginHandler,
   updateHandler,
-  deleteHandler
+  deleteHandler,
+  getUsersHandler
 } = require("./handlers");
 
 exports.register = async (req, res, next) => {
   registerHandler(req, res);
+};
+exports.getUsers = async (req, res, next) => {
+  getUsersHandler(req, res);
 };
 
 exports.login = async (req, res, next) => {

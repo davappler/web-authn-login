@@ -2,7 +2,27 @@ const bcrypt = require("bcryptjs");
 const User = require("../model/user");
 require("dotenv").config();
 
-const { createUser } = require("./helpers");
+const { createUser, getUsers } = require("./helpers");
+
+/**
+ * Register user
+ * @param {object} req The request object
+ * @param {object} res The response object
+ */
+async function getUsersHandler(req, res) {
+  try {
+    const users = await getUsers();
+    res.status(200).json({
+      message: "Users successfully fetched",
+      users
+    });
+  } catch (error) {
+    res.status(401).json({
+      message: "An error occurred while getting the users",
+      error: error.message
+    });
+  }
+}
 
 /**
  * Register user
@@ -120,5 +140,6 @@ module.exports = {
   registerHandler,
   loginHandler,
   updateHandler,
-  deleteHandler
+  deleteHandler,
+  getUsersHandler
 };

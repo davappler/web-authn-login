@@ -17,5 +17,13 @@ async function createUser(email, hashedPassword, role = "Basic") {
 
   return user;
 }
+/**
+ * Gets the users from DB
+ * @return {object} The created user
+ */
+async function getUsers() {
+  const users = await User.find();
+  return users;
+}
 
-module.exports = { createUser };
+module.exports = { createUser, getUsers };
