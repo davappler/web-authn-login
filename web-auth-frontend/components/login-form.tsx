@@ -1,16 +1,41 @@
 
-import { useRouter } from "next/router";
+// import { useRouter } from "next/router";
 /**
  * @return {JSX.Element} The JSX element
  */
 function LoginForm() {
-    const router = useRouter();
+    // const router = useRouter();
+
+
     // eslint-disable-next-line require-jsdoc
-    function handleLogin(event:React.FormEvent<HTMLFormElement>) {
+    async function handleLogin(event:React.FormEvent<HTMLFormElement>) {
         event.preventDefault();
         console.log("haha I was clickedd");
-        router.push("/about");
+
+        const formElement = event.target as HTMLFormElement;
+
+        const formData = new FormData(formElement);
+        const formDataAsEntries = formData.entries();
+        const formDataAsObject = Object.fromEntries(formDataAsEntries);
+        const body = { email: formDataAsObject.email, password: formDataAsObject.password };
+
+
+        fetch("http://localhost:5001/api/auth/login", {
+            method: "POST",
+            mode: "cors",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(body),
+        })
+        .then((response) => response.json())
+        .then((jsonResponse)=>{
+            console.log(jsonResponse);
+            console.log("I am status", jsonResponse.status);
+            // router.push("/about");
+        })
+        .catch((error) => console.log(error));
     }
+
+
     return <section className="bg-gray-50 dark:bg-gray-900">
     <div className="flex flex-col items-center justify-center px-6 py-8 mx-auto md:h-screen lg:py-0">
         <div className="flex items-center mb-6 text-2xl font-semibold text-gray-900 dark:text-white">
