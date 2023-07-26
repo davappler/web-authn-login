@@ -48,7 +48,6 @@ async function handleRegister(event: React.FormEvent<HTMLFormElement>) {
       debug: false
     });
 
-    console.log("This is the registration object", registration);
     const body = { email: formDataAsObject.email, registration: registration };
 
     fetch("http://localhost:5001/api/auth/register", {

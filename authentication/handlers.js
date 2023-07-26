@@ -83,7 +83,7 @@ async function registerHandler(req, res) {
   try {
     let user = await getUser(email);
     if (user.length > 0) {
-      addCredentialsForUser(user.id, credentials);
+      addCredentialsForUser(user[0].id, credentials);
     } else {
       user = await createUser(email, credentials, "admin");
     }
@@ -98,7 +98,8 @@ async function registerHandler(req, res) {
     await deleteChallengeFromDB(challengeFromDB[0]);
 
     res.status(201).json({
-      message: "User successfully registered"
+      message: "User successfully registered",
+      status: 200
     });
   } catch (error) {
     res.status(401).json({

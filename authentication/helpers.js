@@ -46,8 +46,7 @@ async function getUsers() {
  */
 async function addCredentialsForUser(id, credentials) {
   const user = await User.findById(id);
-  console.log("I am here adding credentials for user", user);
-  user.credentials = credentials;
+  user.credentials.push(credentials);
   user.save();
 }
 
