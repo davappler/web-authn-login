@@ -11,7 +11,8 @@ const {
   addChallengeToDB,
   getChallenge,
   addCredentialsForUser,
-  deleteChallengeFromDB
+  deleteChallengeFromDB,
+  getCredentialIdFromDb
 } = require("./helpers");
 
 /**
@@ -47,6 +48,32 @@ async function getUserChallenge(req, res) {
     res.status(201).json({
       message: "Secret Challenge created",
       challenge
+    });
+  } catch (error) {
+    res.status(401).json({
+      message: "Challenge not created",
+      error: error.message
+    });
+  }
+}
+/**
+ * @param {object} req The request object
+ * @param {object} res The response object
+ */
+async function getUserChallengeLogin(req, res) {
+  try {
+    const userEmail = req.params.userEmail;
+    const challenge = generateSecretChallenge();
+    await addChallengeToDB(userEmail, challenge);
+
+    const credential = await getCredentialIdFromDb(userEmail);
+
+    res.status(201).json({
+      message: "Secret Challenge created",
+      authData: {
+        challenge: challenge,
+        credentialID: credential.id
+      }
     });
   } catch (error) {
     res.status(401).json({
@@ -115,13 +142,14 @@ async function registerHandler(req, res) {
  * @param {object} res The response object
  */
 async function loginHandler(req, res) {
-  const { email, password } = req.body;
-  if (!email || !password) {
+  const { email } = req.body;
+  if (!email) {
     return res.status(400).json({
-      message: "email or Password not present"
+      message: "email not present"
     });
   }
 
+  // getCredentialIdFromDb(email);
   try {
     const user = await User.findOne({ email });
     if (!user) {
@@ -198,5 +226,6 @@ module.exports = {
   updateHandler,
   deleteHandler,
   getUsersHandler,
-  getUserChallenge
+  getUserChallenge,
+  getUserChallengeLogin
 };

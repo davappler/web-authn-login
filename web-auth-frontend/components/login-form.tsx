@@ -1,4 +1,15 @@
 
+
+/**
+ * @param {string} url
+ */
+async function GetFetch(url:string) {
+    return await fetch(url)
+    .then((response) => response.json())
+    .then((response)=> response)
+    .catch((error)=>console.log(error));
+  }
+
 // import { useRouter } from "next/router";
 /**
  * @return {JSX.Element} The JSX element
@@ -10,7 +21,6 @@ function LoginForm() {
     // eslint-disable-next-line require-jsdoc
     async function handleLogin(event:React.FormEvent<HTMLFormElement>) {
         event.preventDefault();
-        console.log("haha I was clickedd");
 
         const formElement = event.target as HTMLFormElement;
 
@@ -18,9 +28,9 @@ function LoginForm() {
         const formDataAsEntries = formData.entries();
         const formDataAsObject = Object.fromEntries(formDataAsEntries);
         const body = { email: formDataAsObject.email };
-
-        console.log(body);
-
+        const userEmail = formDataAsObject.email;
+        const response = await GetFetch(`http://localhost:5001/api/auth/request-challenge-login/${userEmail}`);
+        console.log("This is what we havee", body, response);
 
         // fetch("http://localhost:5001/api/auth/login", {
         //     method: "POST",

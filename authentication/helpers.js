@@ -94,6 +94,7 @@ async function getChallenge(email) {
   });
   return challenge;
 }
+
 /**
  * Gets a challenge from the challenge collection
  * @param {object} challenge The email
@@ -101,6 +102,20 @@ async function getChallenge(email) {
  */
 async function deleteChallengeFromDB(challenge) {
   return await Challenge.deleteOne({ email: challenge.email });
+}
+
+/**
+ * Gets the credentialID from the DB for the user
+ * @param {string} email The email
+ * @return {object} The found challenge
+ */
+async function getCredentialIdFromDb(email) {
+  const user = await User.find({
+    email: email
+  });
+
+  const credential = user[0].credentials[0];
+  return credential;
 }
 
 module.exports = {
@@ -111,5 +126,6 @@ module.exports = {
   addChallengeToDB,
   getChallenge,
   addCredentialsForUser,
-  deleteChallengeFromDB
+  deleteChallengeFromDB,
+  getCredentialIdFromDb
 };

@@ -4,7 +4,8 @@ const {
   updateHandler,
   deleteHandler,
   getUsersHandler,
-  getUserChallenge
+  getUserChallenge,
+  getUserChallengeLogin
 } = require("./handlers");
 
 exports.register = async (req, res, next) => {
@@ -16,6 +17,9 @@ exports.getUsers = async (req, res, next) => {
 };
 exports.getChallenge = async (req, res, next) => {
   getUserChallenge(req, res);
+};
+exports.getChallengeLogin = async (req, res, next) => {
+  getUserChallengeLogin(req, res);
 };
 
 exports.login = async (req, res, next) => {
