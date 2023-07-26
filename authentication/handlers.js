@@ -3,7 +3,15 @@ const User = require("../model/user");
 
 require("dotenv").config();
 
-const { getUsers, createUser, generateSecretChallenge } = require("./helpers");
+const {
+  getUsers,
+  getUser,
+  createUser,
+  generateSecretChallenge,
+  addChallengeToDB,
+  getChallenge,
+  addCredentialsForUser
+} = require("./helpers");
 
 /**
  * Register user
@@ -26,13 +34,14 @@ async function getUsersHandler(req, res) {
 }
 
 /**
- * Creates a challenge
  * @param {object} req The request object
  * @param {object} res The response object
  */
 async function getUserChallenge(req, res) {
   try {
+    const userEmail = req.params.userEmail;
     const challenge = generateSecretChallenge();
+    addChallengeToDB(userEmail, challenge);
 
     res.status(201).json({
       message: "Secret Challenge created",
@@ -54,8 +63,12 @@ async function getUserChallenge(req, res) {
 async function registerHandler(req, res) {
   const { server } = await import("@passwordless-id/webauthn");
   const { email, registration } = req.body;
+
+  const challengeFromDB = await getChallenge(email);
+  const challengeKeyFromDB = challengeFromDB[0].challengeKey;
+
   const expected = {
-    challenge: "a7c61ef9-dc23-4806-b486-2428938a547e",
+    challenge: String(challengeKeyFromDB),
     origin: "http://localhost:3000"
   };
 
@@ -67,8 +80,13 @@ async function registerHandler(req, res) {
   const credentials = registrationParsed.credential;
 
   try {
-    // create user should also store the challenge token
-    const user = await createUser(email, credentials, "admin");
+    const user = await getUser(email);
+    if (user) {
+      addCredentialsForUser(existingUser.id, credentials);
+    } else {
+      user = await createUser(email, credentials, "admin");
+    }
+
     if (!user) {
       res.status(401).json({
         message: "User not successful created",
@@ -76,8 +94,8 @@ async function registerHandler(req, res) {
       });
     }
     res.status(201).json({
-      message: "User successfully created",
-      user
+      message: "User successfully created"
+      // here I should send that object with parameters
     });
   } catch (error) {
     res.status(401).json({

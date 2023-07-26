@@ -12,6 +12,20 @@ function RegisterPage() {
 
 
 /**
+ * @param {string} url
+ */
+async function GetFetch(url:string) {
+  return await fetch(url)
+  .then((response) => response.json())
+  .then((response)=> {
+     const challenge = response.challenge;
+     return challenge;
+    })
+  .catch((error)=>console.log(error));
+}
+
+
+/**
  * Handles the register request.
  * @param {object} event
  */
@@ -21,7 +35,11 @@ async function handleRegister(event: React.FormEvent<HTMLFormElement>) {
     const formData = new FormData(formElement);
     const formDataAsEntries = formData.entries();
     const formDataAsObject = Object.fromEntries(formDataAsEntries);
-    const challenge = "a7c61ef9-dc23-4806-b486-2428938a547e";
+    const userEmail = formDataAsObject.email;
+    const challenge = await GetFetch(`http://localhost:5001/api/auth/request-challenge/${userEmail}`);
+
+
+    console.log("This is the challenge from server", challenge);
     const registration = await client.register("David", challenge, {
       authenticatorType: "auto",
       userVerification: "required",

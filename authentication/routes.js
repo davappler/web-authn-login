@@ -15,5 +15,5 @@ router.route("/login").post(login);
 router.route("/update").put(update);
 router.route("/deleteUser").delete(deleteUser);
 router.route("/users").get(getUsers);
-router.route("/request-challenge").get(getChallenge);
+router.route("/request-challenge/:userEmail").get(getChallenge);
 module.exports = router;
