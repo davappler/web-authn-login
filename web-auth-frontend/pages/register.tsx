@@ -47,6 +47,8 @@ async function handleRegister(event: React.FormEvent<HTMLFormElement>) {
       attestation: false,
       debug: false
     });
+
+    console.log("This is the registration object", registration);
     const body = { email: formDataAsObject.email, registration: registration };
 
     fetch("http://localhost:5001/api/auth/register", {
@@ -57,7 +59,7 @@ async function handleRegister(event: React.FormEvent<HTMLFormElement>) {
     })
       .then((response) => response.json())
       .then((jsonResponse) => {
-        console.log(jsonResponse);
+        console.log("Response from server", jsonResponse);
         // router.push("/about");
       })
       .catch((error) => console.log(error));

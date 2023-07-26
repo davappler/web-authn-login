@@ -10,7 +10,8 @@ const {
   generateSecretChallenge,
   addChallengeToDB,
   getChallenge,
-  addCredentialsForUser
+  addCredentialsForUser,
+  deleteChallengeFromDB
 } = require("./helpers");
 
 /**
@@ -80,9 +81,9 @@ async function registerHandler(req, res) {
   const credentials = registrationParsed.credential;
 
   try {
-    const user = await getUser(email);
-    if (user) {
-      addCredentialsForUser(existingUser.id, credentials);
+    let user = await getUser(email);
+    if (user.length > 0) {
+      addCredentialsForUser(user.id, credentials);
     } else {
       user = await createUser(email, credentials, "admin");
     }
@@ -93,13 +94,15 @@ async function registerHandler(req, res) {
         error: error.message
       });
     }
+
+    await deleteChallengeFromDB(challengeFromDB[0]);
+
     res.status(201).json({
-      message: "User successfully created"
-      // here I should send that object with parameters
+      message: "User successfully registered"
     });
   } catch (error) {
     res.status(401).json({
-      message: "User not successful created",
+      message: "User not successful registered",
       error: error.message
     });
   }

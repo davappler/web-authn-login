@@ -46,6 +46,7 @@ async function getUsers() {
  */
 async function addCredentialsForUser(id, credentials) {
   const user = await User.findById(id);
+  console.log("I am here adding credentials for user", user);
   user.credentials = credentials;
   user.save();
 }
@@ -94,6 +95,14 @@ async function getChallenge(email) {
   });
   return challenge;
 }
+/**
+ * Gets a challenge from the challenge collection
+ * @param {object} challenge The email
+ * @return {object} The found challenge
+ */
+async function deleteChallengeFromDB(challenge) {
+  return await Challenge.deleteOne({ email: challenge.email });
+}
 
 module.exports = {
   createUser,
@@ -102,5 +111,6 @@ module.exports = {
   generateSecretChallenge,
   addChallengeToDB,
   getChallenge,
-  addCredentialsForUser
+  addCredentialsForUser,
+  deleteChallengeFromDB
 };

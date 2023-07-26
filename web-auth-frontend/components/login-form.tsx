@@ -19,20 +19,22 @@ function LoginForm() {
         const formDataAsObject = Object.fromEntries(formDataAsEntries);
         const body = { email: formDataAsObject.email };
 
+        console.log(body);
 
-        fetch("http://localhost:5001/api/auth/login", {
-            method: "POST",
-            mode: "cors",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(body),
-        })
-        .then((response) => response.json())
-        .then((jsonResponse)=>{
-            console.log(jsonResponse);
-            console.log("I am status", jsonResponse.status);
-            // router.push("/about");
-        })
-        .catch((error) => console.log(error));
+
+        // fetch("http://localhost:5001/api/auth/login", {
+        //     method: "POST",
+        //     mode: "cors",
+        //     headers: { "Content-Type": "application/json" },
+        //     body: JSON.stringify(body),
+        // })
+        // .then((response) => response.json())
+        // .then((jsonResponse)=>{
+        //     console.log(jsonResponse);
+        //     console.log("I am status", jsonResponse.status);
+        //     // router.push("/about");
+        // })
+        // .catch((error) => console.log(error));
     }
 
 
