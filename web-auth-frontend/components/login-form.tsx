@@ -1,5 +1,4 @@
-
-
+import { client } from "@passwordless-id/webauthn";
 /**
  * @param {string} url
  */
@@ -27,24 +26,34 @@ function LoginForm() {
         const formData = new FormData(formElement);
         const formDataAsEntries = formData.entries();
         const formDataAsObject = Object.fromEntries(formDataAsEntries);
-        const body = { email: formDataAsObject.email };
         const userEmail = formDataAsObject.email;
         const response = await GetFetch(`http://localhost:5001/api/auth/request-challenge-login/${userEmail}`);
-        console.log("This is what we havee", body, response);
 
-        // fetch("http://localhost:5001/api/auth/login", {
-        //     method: "POST",
-        //     mode: "cors",
-        //     headers: { "Content-Type": "application/json" },
-        //     body: JSON.stringify(body),
-        // })
-        // .then((response) => response.json())
-        // .then((jsonResponse)=>{
-        //     console.log(jsonResponse);
-        //     console.log("I am status", jsonResponse.status);
-        //     // router.push("/about");
-        // })
-        // .catch((error) => console.log(error));
+        const credentialID = response.authData.credentialID;
+        const challenge = response.authData.challenge;
+
+
+        const authentication = await client.authenticate([credentialID], challenge, {
+            "authenticatorType": "auto",
+            "userVerification": "required",
+            "timeout": 60000
+          });
+
+        const body = { email: formDataAsObject.email, authentication: authentication };
+
+        console.log("Here is the bodyyy", body);
+        fetch("http://localhost:5001/api/auth/login", {
+            method: "POST",
+            mode: "cors",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(body)
+          })
+            .then((response) => response.json())
+            .then((jsonResponse) => {
+              console.log("Response from server", jsonResponse);
+              // router.push("/about");
+            })
+            .catch((error) => console.log(error));
     }
 
 

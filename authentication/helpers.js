@@ -109,7 +109,7 @@ async function deleteChallengeFromDB(challenge) {
  * @param {string} email The email
  * @return {object} The found challenge
  */
-async function getCredentialIdFromDb(email) {
+async function getCredentialFromDb(email) {
   const user = await User.find({
     email: email
   });
@@ -127,5 +127,5 @@ module.exports = {
   getChallenge,
   addCredentialsForUser,
   deleteChallengeFromDB,
-  getCredentialIdFromDb
+  getCredentialFromDb
 };

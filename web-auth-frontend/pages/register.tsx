@@ -37,9 +37,6 @@ async function handleRegister(event: React.FormEvent<HTMLFormElement>) {
     const formDataAsObject = Object.fromEntries(formDataAsEntries);
     const userEmail = formDataAsObject.email;
     const challenge = await GetFetch(`http://localhost:5001/api/auth/request-challenge/${userEmail}`);
-
-
-    console.log("This is the challenge from server", challenge);
     const registration = await client.register("David", challenge, {
       authenticatorType: "auto",
       userVerification: "required",

@@ -1,4 +1,4 @@
-const bcrypt = require("bcryptjs");
+// const bcrypt = require("bcryptjs");
 const User = require("../model/user");
 
 require("dotenv").config();
@@ -12,7 +12,7 @@ const {
   getChallenge,
   addCredentialsForUser,
   deleteChallengeFromDB,
-  getCredentialIdFromDb
+  getCredentialFromDb
 } = require("./helpers");
 
 /**
@@ -66,7 +66,7 @@ async function getUserChallengeLogin(req, res) {
     const challenge = generateSecretChallenge();
     await addChallengeToDB(userEmail, challenge);
 
-    const credential = await getCredentialIdFromDb(userEmail);
+    const credential = await getCredentialFromDb(userEmail);
 
     res.status(201).json({
       message: "Secret Challenge created",
@@ -142,42 +142,67 @@ async function registerHandler(req, res) {
  * @param {object} res The response object
  */
 async function loginHandler(req, res) {
-  const { email } = req.body;
-  if (!email) {
+  const { server } = await import("@passwordless-id/webauthn");
+  const { email, authentication } = req.body;
+
+  const challengeFromDB = await getChallenge(email);
+  const challengeKeyFromDB = challengeFromDB[0].challengeKey;
+
+  if (!email || !authentication) {
     return res.status(400).json({
-      message: "email not present"
+      message: "Can not authenticate"
     });
   }
 
-  // getCredentialIdFromDb(email);
-  try {
-    const user = await User.findOne({ email });
-    if (!user) {
-      res.status(401).json({
-        message: "Login not successful",
-        error: "User not found"
-      });
-    } else {
-      const isPasswordCorrect = await bcrypt.compare(password, user.password);
+  const credentialKey = await getCredentialFromDb(email);
 
-      // comparing password needs to be changed
-      if (isPasswordCorrect) {
-        // const maxAge = 3 * 60 * 60;
+  const expected = {
+    challenge: challengeKeyFromDB,
+    origin: "http://localhost:3000",
+    userVerified: true,
+    counter: 0
+  };
 
-        res.status(201).json({
-          message: "User successfully Logged in",
-          user: user._id
-        });
-      } else {
-        res.status(400).json({ message: "Login not successful" });
-      }
-    }
-  } catch (error) {
-    res.status(400).json({
-      message: "An error occurred",
-      error: error.message
-    });
-  }
+  // This is not working.
+  const authenticationParsed = await server.verifyAuthentication(
+    authentication,
+    credentialKey,
+    expected
+  );
+
+  console.log("This is the authentication final from DB", authenticationParsed);
+
+  // getCredentialFromDb(email);
+  // try {
+  //   const user = await User.findOne({ email });
+  //   if (!user) {
+  //     res.status(401).json({
+  //       message: "Login not successful",
+  //       error: "User not found"
+  //     });
+  //   } else {
+  // const isPasswordCorrect = await bcrypt.compare(password, user.password);
+
+  //     // comparing password needs to be changed
+  //     if (isPasswordCorrect) {
+  //       // const maxAge = 3 * 60 * 60;
+
+  //       // await deleteChallengeFromDB(challengeFromDB[0]);
+
+  //       res.status(201).json({
+  //         message: "User successfully Logged in",
+  //         user: user._id
+  //       });
+  //     } else {
+  //       res.status(400).json({ message: "Login not successful" });
+  //     }
+  //   }
+  // } catch (error) {
+  //   res.status(400).json({
+  //     message: "An error occurred",
+  //     error: error.message
+  //   });
+  // }
 }
 
 /**
