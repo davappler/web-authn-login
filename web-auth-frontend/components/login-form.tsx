@@ -1,5 +1,6 @@
 import { client } from "@passwordless-id/webauthn";
 import { useRouter } from "next/router";
+import { useState } from "react";
 
 /**
  * @param {string} url
@@ -16,6 +17,7 @@ async function GetFetch(url:string) {
  */
 function LoginForm() {
     const router = useRouter();
+    const [isError, setIsError] = useState(false);
     // eslint-disable-next-line require-jsdoc
     async function handleLogin(event:React.FormEvent<HTMLFormElement>) {
         event.preventDefault();
@@ -26,33 +28,37 @@ function LoginForm() {
         const userEmail = formDataAsObject.email;
         const response = await GetFetch(`http://localhost:5001/api/auth/request-challenge-login/${userEmail}`);
 
-        const credentialID = response.authData.credentialID;
-        const challenge = response.authData.challenge;
+        console.log("I got this message from server while fetching challenge", response);
 
-
-        const authentication = await client.authenticate([credentialID], challenge, {
-            "authenticatorType": "auto",
-            "userVerification": "required",
-            "timeout": 60000
-          });
-
-        const body = { email: formDataAsObject.email, authentication: authentication };
-
-        console.log("Here is the bodyyy", body);
-        fetch("http://localhost:5001/api/auth/login", {
-            method: "POST",
-            mode: "cors",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(body)
-          })
-            .then((response) => response.json())
-            .then((jsonResponse) => {
-              console.log("Response from server", jsonResponse);
-              if (!jsonResponse.error) {
-                router.push("/about");
-              }
+        if (response.error) {
+          setIsError(true);
+        } else {
+          const credentialID = response.authData.credentialID;
+          const challenge = response.authData.challenge;
+          const authentication = await client.authenticate([credentialID], challenge, {
+              "authenticatorType": "auto",
+              "userVerification": "required",
+              "timeout": 60000
+            });
+          const body = { email: formDataAsObject.email, authentication: authentication };
+          console.log("Here is the bodyyy", body);
+          fetch("http://localhost:5001/api/auth/login", {
+              method: "POST",
+              mode: "cors",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(body)
             })
-            .catch((error) => console.log(error));
+              .then((response) => response.json())
+              .then((jsonResponse) => {
+                console.log("Response from server", jsonResponse);
+                if (!jsonResponse.error) {
+                  router.push("/about");
+                } else {
+                  setIsError(true);
+                }
+              })
+              .catch((error) => console.log(error));
+        }
     }
 
 
@@ -71,21 +77,16 @@ function LoginForm() {
                         <label htmlFor="email" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Your email</label>
                         <input type="email" name="email" id="email" className="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="name@company.com" required />
                     </div>
-                    <div className="flex items-center justify-between">
-                        <div className="flex items-start">
-                            <div className="flex items-center h-5">
-                              <input id="remember" aria-describedby="remember" type="checkbox" className="w-4 h-4 border border-gray-300 rounded bg-gray-50 focus:ring-3 focus:ring-primary-300 dark:bg-gray-700 dark:border-gray-600 dark:focus:ring-primary-600 dark:ring-offset-gray-800" required />
-                            </div>
-                            <div className="ml-3 text-sm">
-                              <label htmlFor="remember" className="text-gray-500 dark:text-gray-300">Remember me</label>
-                            </div>
-                        </div>
-                        <a href="#" className="text-sm font-medium text-primary-600 hover:underline dark:text-primary-500">Forgot password?</a>
-                    </div>
                     <button type="submit" className="w-full text-white bg-green-700 hover:bg-primary-700 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800">Sign in</button>
                     <p className="text-sm font-light text-gray-500 dark:text-gray-400">
-                        Don’t have an account yet? <a href="#" className="font-medium text-primary-600 hover:underline dark:text-primary-500">Sign up</a>
+                        Don’t have an account yet? <a href="/register" className="font-medium text-primary-600 hover:underline dark:text-primary-500">Register here</a>
                     </p>
+                    {isError?
+                      <div className="p-4 mb-4 text-sm text-red-800 rounded-lg bg-red-50 dark:bg-gray-800 dark:text-red-400" role="alert">
+                        <span className="font-medium">Not authenticated!</span> Please register first
+                      </div>
+                      :null
+                    }
                 </form>
             </div>
         </div>

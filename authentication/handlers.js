@@ -63,18 +63,29 @@ async function getUserChallenge(req, res) {
 async function getUserChallengeLogin(req, res) {
   try {
     const userEmail = req.params.userEmail;
-    const challenge = generateSecretChallenge();
-    await addChallengeToDB(userEmail, challenge);
 
-    const credential = await getCredentialFromDb(userEmail);
+    const user = await User.findOne({ email: userEmail });
 
-    res.status(201).json({
-      message: "Secret Challenge created",
-      authData: {
-        challenge: challenge,
-        credentialID: credential.id
-      }
-    });
+    if (user === null) {
+      res.status(401).json({
+        message: "Login not successful",
+        error: "User not found"
+      });
+    } else {
+      console.log("here is the userrr", user);
+      const challenge = generateSecretChallenge();
+      await addChallengeToDB(userEmail, challenge);
+
+      const credential = await getCredentialFromDb(userEmail);
+
+      res.status(201).json({
+        message: "Secret Challenge created",
+        authData: {
+          challenge: challenge,
+          credentialID: credential.id
+        }
+      });
+    }
   } catch (error) {
     res.status(401).json({
       message: "Challenge not created",
@@ -157,6 +168,7 @@ async function loginHandler(req, res) {
   try {
     const user = await User.findOne({ email });
     if (!user) {
+      await deleteChallengeFromDB(challengeFromDB[0]);
       res.status(401).json({
         message: "Login not successful",
         error: "User not found"
