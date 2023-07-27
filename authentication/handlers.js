@@ -1,9 +1,19 @@
-const bcrypt = require("bcryptjs");
+// const bcrypt = require("bcryptjs");
 const User = require("../model/user");
 
 require("dotenv").config();
 
-const { getUsers, createUser, generateSecretChallenge } = require("./helpers");
+const {
+  getUsers,
+  getUser,
+  createUser,
+  generateSecretChallenge,
+  addChallengeToDB,
+  getChallenge,
+  addCredentialsForUser,
+  deleteChallengeFromDB,
+  getCredentialFromDb
+} = require("./helpers");
 
 /**
  * Register user
@@ -26,17 +36,44 @@ async function getUsersHandler(req, res) {
 }
 
 /**
- * Creates a challenge
  * @param {object} req The request object
  * @param {object} res The response object
  */
 async function getUserChallenge(req, res) {
   try {
+    const userEmail = req.params.userEmail;
     const challenge = generateSecretChallenge();
+    addChallengeToDB(userEmail, challenge);
 
     res.status(201).json({
       message: "Secret Challenge created",
       challenge
+    });
+  } catch (error) {
+    res.status(401).json({
+      message: "Challenge not created",
+      error: error.message
+    });
+  }
+}
+/**
+ * @param {object} req The request object
+ * @param {object} res The response object
+ */
+async function getUserChallengeLogin(req, res) {
+  try {
+    const userEmail = req.params.userEmail;
+    const challenge = generateSecretChallenge();
+    await addChallengeToDB(userEmail, challenge);
+
+    const credential = await getCredentialFromDb(userEmail);
+
+    res.status(201).json({
+      message: "Secret Challenge created",
+      authData: {
+        challenge: challenge,
+        credentialID: credential.id
+      }
     });
   } catch (error) {
     res.status(401).json({
@@ -54,8 +91,12 @@ async function getUserChallenge(req, res) {
 async function registerHandler(req, res) {
   const { server } = await import("@passwordless-id/webauthn");
   const { email, registration } = req.body;
+
+  const challengeFromDB = await getChallenge(email);
+  const challengeKeyFromDB = challengeFromDB[0].challengeKey;
+
   const expected = {
-    challenge: "a7c61ef9-dc23-4806-b486-2428938a547e",
+    challenge: String(challengeKeyFromDB),
     origin: "http://localhost:3000"
   };
 
@@ -67,21 +108,29 @@ async function registerHandler(req, res) {
   const credentials = registrationParsed.credential;
 
   try {
-    // create user should also store the challenge token
-    const user = await createUser(email, credentials, "admin");
+    let user = await getUser(email);
+    if (user.length > 0) {
+      addCredentialsForUser(user[0].id, credentials);
+    } else {
+      user = await createUser(email, credentials, "admin");
+    }
+
     if (!user) {
       res.status(401).json({
         message: "User not successful created",
         error: error.message
       });
     }
+
+    await deleteChallengeFromDB(challengeFromDB[0]);
+
     res.status(201).json({
-      message: "User successfully created",
-      user
+      message: "User successfully registered",
+      status: 200
     });
   } catch (error) {
     res.status(401).json({
-      message: "User not successful created",
+      message: "User not successful registered",
       error: error.message
     });
   }
@@ -93,41 +142,67 @@ async function registerHandler(req, res) {
  * @param {object} res The response object
  */
 async function loginHandler(req, res) {
-  const { email, password } = req.body;
-  if (!email || !password) {
+  const { server } = await import("@passwordless-id/webauthn");
+  const { email, authentication } = req.body;
+
+  const challengeFromDB = await getChallenge(email);
+  const challengeKeyFromDB = challengeFromDB[0].challengeKey;
+
+  if (!email || !authentication) {
     return res.status(400).json({
-      message: "email or Password not present"
+      message: "Can not authenticate"
     });
   }
 
-  try {
-    const user = await User.findOne({ email });
-    if (!user) {
-      res.status(401).json({
-        message: "Login not successful",
-        error: "User not found"
-      });
-    } else {
-      const isPasswordCorrect = await bcrypt.compare(password, user.password);
+  const credentialKey = await getCredentialFromDb(email);
 
-      // comparing password needs to be changed
-      if (isPasswordCorrect) {
-        // const maxAge = 3 * 60 * 60;
+  const expected = {
+    challenge: challengeKeyFromDB,
+    origin: "http://localhost:3000",
+    userVerified: true,
+    counter: 0
+  };
 
-        res.status(201).json({
-          message: "User successfully Logged in",
-          user: user._id
-        });
-      } else {
-        res.status(400).json({ message: "Login not successful" });
-      }
-    }
-  } catch (error) {
-    res.status(400).json({
-      message: "An error occurred",
-      error: error.message
-    });
-  }
+  // This is not working.
+  const authenticationParsed = await server.verifyAuthentication(
+    authentication,
+    credentialKey,
+    expected
+  );
+
+  console.log("This is the authentication final from DB", authenticationParsed);
+
+  // getCredentialFromDb(email);
+  // try {
+  //   const user = await User.findOne({ email });
+  //   if (!user) {
+  //     res.status(401).json({
+  //       message: "Login not successful",
+  //       error: "User not found"
+  //     });
+  //   } else {
+  // const isPasswordCorrect = await bcrypt.compare(password, user.password);
+
+  //     // comparing password needs to be changed
+  //     if (isPasswordCorrect) {
+  //       // const maxAge = 3 * 60 * 60;
+
+  //       // await deleteChallengeFromDB(challengeFromDB[0]);
+
+  //       res.status(201).json({
+  //         message: "User successfully Logged in",
+  //         user: user._id
+  //       });
+  //     } else {
+  //       res.status(400).json({ message: "Login not successful" });
+  //     }
+  //   }
+  // } catch (error) {
+  //   res.status(400).json({
+  //     message: "An error occurred",
+  //     error: error.message
+  //   });
+  // }
 }
 
 /**
@@ -176,5 +251,6 @@ module.exports = {
   updateHandler,
   deleteHandler,
   getUsersHandler,
-  getUserChallenge
+  getUserChallenge,
+  getUserChallengeLogin
 };

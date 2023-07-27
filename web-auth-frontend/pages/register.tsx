@@ -2,20 +2,41 @@ import "./globals.css";
 import RegisterForm from "@/components/register-form";
 import { client } from "@passwordless-id/webauthn";
 
+
 /**
  * @return {JSX.Element} The JSX element
  */
 function RegisterPage() {
-  async function handleRegister(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    console.log("haha I was clickedd");
+  return <RegisterForm handleRegister={handleRegister} />;
+}
 
+
+/**
+ * @param {string} url
+ */
+async function GetFetch(url:string) {
+  return await fetch(url)
+  .then((response) => response.json())
+  .then((response)=> {
+     const challenge = response.challenge;
+     return challenge;
+    })
+  .catch((error)=>console.log(error));
+}
+
+
+/**
+ * Handles the register request.
+ * @param {object} event
+ */
+async function handleRegister(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
     const formElement = event.target as HTMLFormElement;
     const formData = new FormData(formElement);
     const formDataAsEntries = formData.entries();
     const formDataAsObject = Object.fromEntries(formDataAsEntries);
-
-    const challenge = "a7c61ef9-dc23-4806-b486-2428938a547e";
+    const userEmail = formDataAsObject.email;
+    const challenge = await GetFetch(`http://localhost:5001/api/auth/request-challenge/${userEmail}`);
     const registration = await client.register("David", challenge, {
       authenticatorType: "auto",
       userVerification: "required",
@@ -24,11 +45,7 @@ function RegisterPage() {
       debug: false
     });
 
-    console.log("I am reg", registration);
-
     const body = { email: formDataAsObject.email, registration: registration };
-
-    console.log("ahhaha body ", body);
 
     fetch("http://localhost:5001/api/auth/register", {
       method: "POST",
@@ -38,13 +55,10 @@ function RegisterPage() {
     })
       .then((response) => response.json())
       .then((jsonResponse) => {
-        console.log(jsonResponse);
+        console.log("Response from server", jsonResponse);
         // router.push("/about");
       })
       .catch((error) => console.log(error));
   }
-
-  return <RegisterForm handleRegister={handleRegister} />;
-}
 
 export default RegisterPage;

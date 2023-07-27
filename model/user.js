@@ -11,7 +11,7 @@ const UserSchema = new Mongoose.Schema({
     required: true
   },
   credentials: {
-    type: Object,
+    type: Array,
     unique: true,
     required: true
   }
