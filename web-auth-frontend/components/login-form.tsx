@@ -1,4 +1,6 @@
 import { client } from "@passwordless-id/webauthn";
+import { useRouter } from "next/router";
+
 /**
  * @param {string} url
  */
@@ -9,20 +11,15 @@ async function GetFetch(url:string) {
     .catch((error)=>console.log(error));
   }
 
-// import { useRouter } from "next/router";
 /**
  * @return {JSX.Element} The JSX element
  */
 function LoginForm() {
-    // const router = useRouter();
-
-
+    const router = useRouter();
     // eslint-disable-next-line require-jsdoc
     async function handleLogin(event:React.FormEvent<HTMLFormElement>) {
         event.preventDefault();
-
         const formElement = event.target as HTMLFormElement;
-
         const formData = new FormData(formElement);
         const formDataAsEntries = formData.entries();
         const formDataAsObject = Object.fromEntries(formDataAsEntries);
@@ -51,7 +48,9 @@ function LoginForm() {
             .then((response) => response.json())
             .then((jsonResponse) => {
               console.log("Response from server", jsonResponse);
-              // router.push("/about");
+              if (!jsonResponse.error) {
+                router.push("/about");
+              }
             })
             .catch((error) => console.log(error));
     }

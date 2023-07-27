@@ -154,55 +154,41 @@ async function loginHandler(req, res) {
     });
   }
 
-  const credentialKey = await getCredentialFromDb(email);
+  try {
+    const user = await User.findOne({ email });
+    if (!user) {
+      res.status(401).json({
+        message: "Login not successful",
+        error: "User not found"
+      });
+    } else {
+      const credentialKey = await getCredentialFromDb(email);
+      const expected = {
+        challenge: challengeKeyFromDB,
+        origin: "http://localhost:3000",
+        userVerified: true,
+        counter: -1
+      };
 
-  const expected = {
-    challenge: challengeKeyFromDB,
-    origin: "http://localhost:3000",
-    userVerified: true,
-    counter: 0
-  };
+      await server.verifyAuthentication(
+        authentication,
+        credentialKey,
+        expected
+      );
 
-  // This is not working.
-  const authenticationParsed = await server.verifyAuthentication(
-    authentication,
-    credentialKey,
-    expected
-  );
+      await deleteChallengeFromDB(challengeFromDB[0]);
 
-  console.log("This is the authentication final from DB", authenticationParsed);
-
-  // getCredentialFromDb(email);
-  // try {
-  //   const user = await User.findOne({ email });
-  //   if (!user) {
-  //     res.status(401).json({
-  //       message: "Login not successful",
-  //       error: "User not found"
-  //     });
-  //   } else {
-  // const isPasswordCorrect = await bcrypt.compare(password, user.password);
-
-  //     // comparing password needs to be changed
-  //     if (isPasswordCorrect) {
-  //       // const maxAge = 3 * 60 * 60;
-
-  //       // await deleteChallengeFromDB(challengeFromDB[0]);
-
-  //       res.status(201).json({
-  //         message: "User successfully Logged in",
-  //         user: user._id
-  //       });
-  //     } else {
-  //       res.status(400).json({ message: "Login not successful" });
-  //     }
-  //   }
-  // } catch (error) {
-  //   res.status(400).json({
-  //     message: "An error occurred",
-  //     error: error.message
-  //   });
-  // }
+      res.status(201).json({
+        message: "User successfully Logged in",
+        status: 200
+      });
+    }
+  } catch (error) {
+    res.status(400).json({
+      message: "An error occurred",
+      error: error.message
+    });
+  }
 }
 
 /**

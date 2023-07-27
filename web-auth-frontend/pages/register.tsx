@@ -1,35 +1,19 @@
 import "./globals.css";
 import RegisterForm from "@/components/register-form";
 import { client } from "@passwordless-id/webauthn";
-
+import { useRouter } from "next/router";
 
 /**
  * @return {JSX.Element} The JSX element
  */
 function RegisterPage() {
-  return <RegisterForm handleRegister={handleRegister} />;
-}
+  const router = useRouter();
 
 
 /**
- * @param {string} url
+ * @param {object} event JSX element
  */
-async function GetFetch(url:string) {
-  return await fetch(url)
-  .then((response) => response.json())
-  .then((response)=> {
-     const challenge = response.challenge;
-     return challenge;
-    })
-  .catch((error)=>console.log(error));
-}
-
-
-/**
- * Handles the register request.
- * @param {object} event
- */
-async function handleRegister(event: React.FormEvent<HTMLFormElement>) {
+  async function handleRegister(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const formElement = event.target as HTMLFormElement;
     const formData = new FormData(formElement);
@@ -56,9 +40,25 @@ async function handleRegister(event: React.FormEvent<HTMLFormElement>) {
       .then((response) => response.json())
       .then((jsonResponse) => {
         console.log("Response from server", jsonResponse);
-        // router.push("/about");
+        router.push("/about");
       })
       .catch((error) => console.log(error));
   }
+  return <RegisterForm handleRegister={handleRegister} />;
+}
+
+
+/**
+ * @param {string} url
+ */
+async function GetFetch(url:string) {
+  return await fetch(url)
+  .then((response) => response.json())
+  .then((response)=> {
+     const challenge = response.challenge;
+     return challenge;
+    })
+  .catch((error)=>console.log(error));
+}
 
 export default RegisterPage;
