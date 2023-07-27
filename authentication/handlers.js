@@ -135,6 +135,7 @@ async function registerHandler(req, res) {
 
     await deleteChallengeFromDB(challengeFromDB[0]);
 
+    console.log("I was heree");
     res.status(201).json({
       message: "User successfully registered",
       status: 200
