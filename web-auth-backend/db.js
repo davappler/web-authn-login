@@ -1,9 +1,9 @@
 const Mongoose = require("mongoose");
-const localDB = "mongodb://localhost:27017/web-authn";
+const mongoUrl = "mongodb://mongo:27017/web-authn";
 const connectDB = async () => {
-  await Mongoose.connect(localDB, {
+  await Mongoose.connect(mongoUrl, {
     useNewUrlParser: true,
-    useUnifiedTopology: true,
+    useUnifiedTopology: true
   });
   console.log("MongoDB Connected");
 };
