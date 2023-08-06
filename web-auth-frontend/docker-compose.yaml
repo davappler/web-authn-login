@@ -1,0 +1,11 @@
+version: "3"
+services:
+  web-authn-client:
+    build: .
+    image: davappler/web-authn-client
+    ports:
+      - "3000:3000"
+
+    # This is for production, not useful in developer environment
+    environment:
+      - NODE_ENV=production

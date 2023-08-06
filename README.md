@@ -3,6 +3,8 @@
 - It uses the inbuilt authenticator of the device that is trying to login
 - There are two folders, one for server and another for frontend client.
 - Feel free to add any improvements in this project, this is a very basic mock to show to the functionality of the password-less authentication system.
+- Backend server is using express app
+- Frontend client is using next js react app
 
 
 ## Instructions to run this project locally
@@ -20,6 +22,11 @@
 
 - Backend can be run as follow (refer to makefile for respective commands)
   - `cd web-auth-backend`
+  - `make build` (For building the image)
+  - `make up` ( Runs the containers)
+  - `make down` (Stops the containers)
+- Frontend client can be run as follow (refer to makefile for respective commands)
+  - `cd web-auth-frontend`
   - `make build` (For building the image)
   - `make up` ( Runs the containers)
   - `make down` (Stops the containers)
