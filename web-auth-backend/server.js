@@ -14,6 +14,10 @@ app.use(cookieParser());
 app.use(cors());
 const PORT = 5001;
 
+app.get("/", (req, res) => {
+  res.send("Hello World");
+});
+
 app.use("/api/auth", require("./authentication/routes"));
 // app.get("/admin", (req, res) => res.send("Admin Route"));
 // app.get("/basic", (req, res) => res.send("User Route"));
