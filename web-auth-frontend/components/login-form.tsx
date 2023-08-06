@@ -1,6 +1,7 @@
 import { client } from "@passwordless-id/webauthn";
 import { useRouter } from "next/router";
 import { useState } from "react";
+import Link from 'next/link';
 
 /**
  * @param {string} url
@@ -41,7 +42,6 @@ function LoginForm() {
               "timeout": 60000
             });
           const body = { email: formDataAsObject.email, authentication: authentication };
-          console.log("Here is the bodyyy", body);
           fetch("http://localhost:5001/api/auth/login", {
               method: "POST",
               mode: "cors",
@@ -50,7 +50,6 @@ function LoginForm() {
             })
               .then((response) => response.json())
               .then((jsonResponse) => {
-                console.log("Response from server", jsonResponse);
                 if (!jsonResponse.error) {
                   router.push("/about");
                 } else {
@@ -79,7 +78,10 @@ function LoginForm() {
                     </div>
                     <button type="submit" className="w-full text-white bg-green-700 hover:bg-primary-700 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800">Sign in</button>
                     <p className="text-sm font-light text-gray-500 dark:text-gray-400">
-                        Don’t have an account yet? <a href="/register" className="font-medium text-primary-600 hover:underline dark:text-primary-500">Register here</a>
+                        Don’t have an account yet? 
+                        <Link href="/register" >
+                           <span className="font-medium text-primary-600 hover:underline dark:text-primary-500">Register here</span>
+                        </Link>
                     </p>
                     {isError?
                       <div className="p-4 mb-4 text-sm text-red-800 rounded-lg bg-red-50 dark:bg-gray-800 dark:text-red-400" role="alert">
