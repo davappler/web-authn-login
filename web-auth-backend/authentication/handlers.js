@@ -64,7 +64,7 @@ async function getUserChallengeLogin(req, res) {
   try {
     const userEmail = req.params.userEmail;
 
-    const user = await User.findOne({ email: userEmail });
+    const user = await getUser(userEmail);
 
     if (user === null) {
       res.status(401).json({
@@ -72,7 +72,6 @@ async function getUserChallengeLogin(req, res) {
         error: "User not found"
       });
     } else {
-      console.log("here is the userrr", user);
       const challenge = generateSecretChallenge();
       await addChallengeToDB(userEmail, challenge);
 
@@ -135,7 +134,6 @@ async function registerHandler(req, res) {
 
     await deleteChallengeFromDB(challengeFromDB[0]);
 
-    console.log("I was heree");
     res.status(201).json({
       message: "User successfully registered",
       status: 200
@@ -167,7 +165,7 @@ async function loginHandler(req, res) {
   }
 
   try {
-    const user = await User.findOne({ email });
+    const user = await getUser(email);
     if (!user) {
       await deleteChallengeFromDB(challengeFromDB[0]);
       res.status(401).json({
@@ -211,7 +209,6 @@ async function loginHandler(req, res) {
  */
 async function updateHandler(req, res) {
   const { newEmail, id } = req.body;
-  // Verifying if role and id is present
 
   try {
     const user = await User.findById(id);
