@@ -7,7 +7,8 @@ const {
   deleteUser,
   getUsers,
   getChallenge,
-  getChallengeLogin
+  getChallengeLogin,
+  isExistingUser
 } = require("./repo");
 // const { adminAuth } = require("../middleware/admin/auth");
 
@@ -17,5 +18,6 @@ router.route("/update").put(update);
 router.route("/deleteUser").delete(deleteUser);
 router.route("/users").get(getUsers);
 router.route("/request-challenge/:userEmail").get(getChallenge);
+router.route("/existing-user/:userEmail").get(isExistingUser);
 router.route("/request-challenge-login/:userEmail").get(getChallengeLogin);
 module.exports = router;

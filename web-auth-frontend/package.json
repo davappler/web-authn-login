@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "format:fix": "prettier --write $PWD/'**/*.{js,mjs,ts,tsx,json}'"
   },
   "dependencies": {
     "@passwordless-id/webauthn": "^1.2.4",
