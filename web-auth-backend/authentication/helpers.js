@@ -1,6 +1,7 @@
 const User = require("../model/user");
 const Challenge = require("../model/challengeStore");
 const crypto = require("crypto");
+const jwt = require("jsonwebtoken");
 require("dotenv").config();
 
 /**
@@ -131,7 +132,7 @@ function generateJwtToken(
   jwtSecret = process.env.JWT_SECRET
 ) {
   const token = jwt.sign(
-    { id: user._id, username: user.username, role: user.role },
+    { id: user[0]._id, username: user[0].email, role: user[0].role },
     jwtSecret,
     { expiresIn: maxAge }
   );

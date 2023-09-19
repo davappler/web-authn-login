@@ -1,5 +1,3 @@
-// const bcrypt = require("bcryptjs");
-const User = require("../model/user");
 require("dotenv").config();
 
 const {
@@ -227,52 +225,51 @@ async function loginHandler(req, res) {
   }
 }
 
-/**
- * Updates a user
- * @param {object} req The request object
- * @param {object} res The response object
- */
-async function updateHandler(req, res) {
-  const { newEmail, id } = req.body;
-
-  try {
-    const user = await User.findById(id);
-    user.email = newEmail;
-    user.save();
-    res.status(200).json({ message: "email updated successfully" });
-  } catch (error) {
-    res
-      .status(400)
-      .json({ message: "An error occurred", error: error.message });
-  }
-}
-
-/**
- * Deletes a user
- * @param {object} req The request object
- * @param {object} res The response object
- */
-async function deleteHandler(req, res) {
-  const { id } = req.body;
-  await User.findById(id)
-    .then((user) => user.deleteOne())
-    .then((user) =>
-      res.status(201).json({ message: "User successfully deleted", user })
-    )
-    .catch((error) =>
-      res
-        .status(400)
-        .json({ message: "An error occurred", error: error.message })
-    );
-}
-
 module.exports = {
   registerHandler,
   loginHandler,
-  updateHandler,
-  deleteHandler,
   getUsersHandler,
   getUserChallenge,
   getUserChallengeLogin,
   isUserRegistered
 };
+
+// ----- Extra code down here --------
+// /**
+//  * Updates a user
+//  * @param {object} req The request object
+//  * @param {object} res The response object
+//  */
+// async function updateHandler(req, res) {
+//   const { newEmail, id } = req.body;
+
+//   try {
+//     const user = await User.findById(id);
+//     user.email = newEmail;
+//     user.save();
+//     res.status(200).json({ message: "email updated successfully" });
+//   } catch (error) {
+//     res
+//       .status(400)
+//       .json({ message: "An error occurred", error: error.message });
+//   }
+// }
+
+// /**
+//  * Deletes a user
+//  * @param {object} req The request object
+//  * @param {object} res The response object
+//  */
+// async function deleteHandler(req, res) {
+//   const { id } = req.body;
+//   await User.findById(id)
+//     .then((user) => user.deleteOne())
+//     .then((user) =>
+//       res.status(201).json({ message: "User successfully deleted", user })
+//     )
+//     .catch((error) =>
+//       res
+//         .status(400)
+//         .json({ message: "An error occurred", error: error.message })
+//     );
+// }
