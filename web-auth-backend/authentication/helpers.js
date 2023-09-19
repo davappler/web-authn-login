@@ -1,6 +1,7 @@
 const User = require("../model/user");
 const Challenge = require("../model/challengeStore");
 const crypto = require("crypto");
+const jwt = require("jsonwebtoken");
 require("dotenv").config();
 
 /**
@@ -118,6 +119,27 @@ async function getCredentialFromDb(email) {
   return credential;
 }
 
+/**
+ * Generates a JWT token
+ * @param {object} user The user
+ * @param {int} maxAge The maxAge of token, by default it is 3 hours
+ * @param {string} jwtSecret The jwtToken secret, default value is ENV variable
+ * @return {string} The token
+ */
+function generateJwtToken(
+  user,
+  maxAge = 3 * 60 * 60,
+  jwtSecret = process.env.JWT_SECRET
+) {
+  const token = jwt.sign(
+    { id: user[0]._id, username: user[0].email, role: user[0].role },
+    jwtSecret,
+    { expiresIn: maxAge }
+  );
+
+  return token;
+}
+
 module.exports = {
   createUser,
   getUsers,
@@ -127,5 +149,6 @@ module.exports = {
   getChallenge,
   addCredentialsForUser,
   deleteChallengeFromDB,
-  getCredentialFromDb
+  getCredentialFromDb,
+  generateJwtToken
 };

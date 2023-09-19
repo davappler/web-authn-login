@@ -14,8 +14,10 @@
 
 ## Instructions to run this project locally
 - `npm i` to install the dependencies
+- make sure you are using node 20 + version if running locally
 - Make sure mongo is installed and running
 - I use the community version and run it like this => `brew services start mongodb-community`
+- also if you are running locally go to `web-auth-backend/db.js` file and change the mongoUrl to use localhost =>  `const mongoUrl = "mongodb://localhost:27017/web-authn";`
 - Running backend server =>
   - `cd web-auth-backend`
   - `npm run dev`
